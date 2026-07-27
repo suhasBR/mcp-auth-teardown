@@ -28,11 +28,11 @@ call, `sub`↔`user_id` binding checks, or the attack scripts' core logic.
 |---|---|---|
 | `server-1-apikey/` | ✅ | Runs, tested, attack #1 verified |
 | `attacks/01_leaked_key_replay.py` | ✅ | Working, blog-ready output |
-| `server-2-proxy/` | ⬜ | README only |
-| `server-3-resourceserver/` | ⬜ | README only |
-| `attacks/02_token_replay.py` | 🟡 | print-stub only |
-| `attacks/03_cross_server_token.py` | 🟡 | print-stub only |
-| `attacks/04_confused_deputy.py` | 🟡 | print-stub only |
+| `server-2-proxy/` | 🟡 | scaffold done; needs Auth0 tenant config + test |
+| `server-3-resourceserver/` | 🟡 | all files scaffolded; needs Auth0 tenant setup + sub values in data.py |
+| `attacks/02_token_replay.py` | 🟡 | harness scaffolded; token-capture + replay assertions are yours |
+| `attacks/03_cross_server_token.py` | 🟡 | complete — needs SERVER_2_TOKEN pasted in |
+| `attacks/04_confused_deputy.py` | 🟡 | complete — needs ALICE_TOKEN pasted in |
 | `setup/provision_auth0.py` | ⬜ | not started |
 | README video + blog post | ⬜ | placeholders in README |
 
@@ -48,41 +48,45 @@ call, `sub`↔`user_id` binding checks, or the attack scripts' core logic.
 
 ## Phase 2 — Server #2 (FastMCP auth-proxy)
 
-**Goal:** MCP server acts as an OAuth client. It holds a confidential M2M
-credential and fetches an access token from Auth0 (`client_credentials`),
-then uses/forwards it. This is the "convenient but the server holds the secret,
-and the audit log loses the user" pattern.
+**Goal:** MCP server acts as an OAuth proxy using FastMCP's `Auth0Provider`
+(wraps `OIDCProxy` → `OAuthProxy`). The server holds a confidential Auth0
+application credential and bridges the OIDC flow between MCP clients and Auth0.
+FastMCP issues its own short-lived JWTs to clients.
 
-### Assistant scaffolds (boilerplate)
-- [ ] `data.py` — copy of `server-1-apikey/data.py` (or shared import)
-- [ ] `requirements.txt` — `fastmcp`, `uvicorn`, `httpx`, `python-jose[cryptography]` (or `pyjwt[crypto]`), `python-dotenv`
-- [ ] `.env.example` — the `AUTH0_*` vars for v2 (domain, client id/secret, audience)
-- [ ] `server.py` **skeleton** — same 3 tools (`list_payments`, `book_payment`,
-      `cancel_payment`), the audit-logging format matching server-1, and a
-      middleware mount point. Leave the token-validation body as a stub calling
-      into `auth.py`.
+**Design decision made:** `Auth0Provider` from FastMCP 3.x (not hand-rolled
+middleware + M2M `client_credentials`). Rationale: shows the "turnkey proxy"
+pattern that most teams will actually reach for. The interview-defensible question
+becomes "explain what Auth0Provider does under the hood and what its blast radius is."
 
-### Suhas writes by hand (`auth.py` — interview-defensible)
-- [ ] `get_m2m_token()` — POST to `https://{AUTH0_DOMAIN}/oauth/token` with
-      `grant_type=client_credentials`, `audience=AUTH0_AUDIENCE_V2`. Decide:
-      fetch-per-request vs cache-until-expiry (recommend cache with a small
-      safety margin — more realistic, and you can speak to it).
-- [ ] `validate_token(token)` — fetch JWKS from
-      `https://{AUTH0_DOMAIN}/.well-known/jwks.json`, verify signature, `iss`,
-      `aud`, `exp`. This is the middleware's core.
-- [ ] Wire validation into the FastMCP request path.
+**FastMCP version:** 3.4.4 (latest as of 2026-07-20). Uses `Auth0Provider` from
+`fastmcp.server.auth.providers.auth0`. Auth is passed to `FastMCP(auth=...)` —
+no separate middleware needed.
 
-### Design decision to pin down (yours)
-FastMCP ships an `OAuthProxy` construct for bridging IdPs. Decide whether
-server-2 uses that construct or a hand-rolled middleware + `get_m2m_token()`.
-Either is fine for the blog — just be able to explain *why*. Document the choice
-in `server-2-proxy/README.md`.
+**Note on `auth.py`:** With `Auth0Provider`, FastMCP owns the JWT validation
+and OIDC flow internally — there is no `auth.py` for you to write here.
+The "Suhas writes by hand" work for this server is the Auth0 tenant setup
+and understanding the security properties (see server.py docstring).
+
+### ✅ Scaffold complete (assistant wrote)
+- [x] `data.py` — copy of `server-1-apikey/data.py`
+- [x] `requirements.txt` — `fastmcp>=3.4.4`, `uvicorn[standard]`, `python-dotenv`
+- [x] `.env.example` — `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_AUDIENCE`, `SERVER_2_PORT`
+- [x] `server.py` — 3 tools + audit logging + `Auth0Provider` wired in
+
+### You do next (on the office laptop)
+- [ ] Auth0: create an Application (Regular Web App or SPA)
+      - Add `http://127.0.0.1:8002/auth/callback` to Allowed Callback URLs
+- [ ] Auth0: create an API with identifier `https://api.payment-agent-v2`
+- [ ] Copy `.env.example` → `.env`, fill in the four `AUTH0_*` vars
+- [ ] `pip install -r requirements.txt && python server.py` — server should start
+- [ ] Test: connect with an MCP client, confirm 401 without a token, 200 with one
+- [ ] Verify audit gap: Auth0 logs show "app authorized" but NOT the tool call params
 
 ### Definition of done
 - [ ] Server starts, rejects requests with no/invalid token (401)
 - [ ] Server accepts a valid Auth0 token and runs the tool
-- [ ] Audit log shows the token was used but **cannot** attribute to a human user
-      (this gap is the point — call it out in a log comment)
+- [ ] Audit log shows `token_present=True` but Auth0's own logs have no record
+      of the specific tool call — that gap is the blog's point
 
 ---
 

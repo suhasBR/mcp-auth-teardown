@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__slack__slack-slack_search_public",
+      "mcp__slack__slack-slack_search_public_and_private",
+      "mcp__google_search__google_search-search_custom",
+      "mcp__okta-adapter__github__list_commits",
+      "mcp__the_landing__the_landing-search_simpplr_contents"
+    ]
+  }
+}

@@ -23,8 +23,9 @@ from a legitimate request.
 import asyncio
 import sys
 
+import httpx
 from mcp import ClientSession
-from mcp.client.streamable_http import streamablehttp_client
+from mcp.client.streamable_http import streamable_http_client
 
 SERVER_URL = "http://127.0.0.1:8001/mcp"
 
@@ -65,10 +66,8 @@ async def main():
     print()
 
     try:
-        async with streamablehttp_client(
-            SERVER_URL,
-            headers={"X-API-Key": LEAKED_KEY},
-        ) as (read, write, _):
+        http = httpx.AsyncClient(headers={"X-API-Key": LEAKED_KEY})
+        async with streamable_http_client(SERVER_URL, http_client=http) as (read, write, _):
             async with ClientSession(read, write) as session:
                 await session.initialize()
 
