@@ -7,7 +7,7 @@ the OIDC flow to Auth0. FastMCP issues its own short-lived JWTs to clients.
 
 Hardening applied vs a naive proxy implementation:
   ✓ Short token lifetime (1h via fastmcp_access_token_expiry_seconds)
-  ✓ sub ↔ user_id binding on every tool call (prevents confused deputy)
+  ✓ sub ↔ user_id binding on every tool call (prevents user impersonation)
   ✓ sub is sourced from the upstream Auth0 JWT via get_access_token().claims
   ✓ Audit log includes the Auth0 sub on every action
 

@@ -1,6 +1,6 @@
 """
-Attack #4: Confused Deputy — Agent Acts for the Wrong User
------------------------------------------------------------
+Attack #4: User Impersonation — sub <-> user_id Binding Bypass
+-----------------------------------------------------------------
 Scenario: Agent holds a valid Auth0 JWT for alice
 (sub = auth0|69babdf..., aud = http://127.0.0.1:8003/mcp).
 It calls book_payment(user_id="bob") — substituting a different user_id
@@ -15,6 +15,17 @@ What this proves:
   - Only Server #3 makes this structurally impossible: the sub claim
     IS the authorization — user_id must match it.
 
+Naming note: this is NOT the "Confused Deputy Problem" as defined in the
+MCP spec (an OAuth proxy with a static upstream client ID + third-party
+consent-cookie reuse letting an attacker skip consent and steal an
+authorization code). This is a broken object-level authorization /
+authenticated-user-impersonation bug: a validly authenticated caller
+substitutes a different subject in a tool argument. Related, but a
+different vulnerability class — see docs/threat-model.md for the
+distinction and why Server #3's architecture isn't even exposed to the
+spec's actual confused-deputy attack (it never plays the OAuth-proxy
+role that attack requires).
+
 OWASP Agentic Top 10 mapping:
   A2: Insufficient Authorization (agent acting beyond delegated scope)
   A4: Data Exfiltration (accessing another user's payment data)
@@ -25,7 +36,7 @@ Run:
   3. Start server-3: cd server-3-resourceserver && python server.py
   4. Paste alice's Auth0 JWT into ALICE_TOKEN below
      (from server-3 terminal: DEMO | auth0_token=eyJ...)
-  5. cd attacks && python 04_confused_deputy.py
+  5. cd attacks && python 04_user_impersonation.py
 """
 
 import asyncio
@@ -95,7 +106,7 @@ async def main():
 
     print()
     print(f"{BOLD}{'=' * 62}{RESET}")
-    print(f"{BOLD}  Attack #4: Confused Deputy{RESET}")
+    print(f"{BOLD}  Attack #4: User Impersonation (sub <-> user_id bypass){RESET}")
     print(f"{BOLD}  Token sub (alice): {alice_sub}{RESET}")
     print(f"{BOLD}  Acting as:         bob{RESET}")
     print(f"{BOLD}{'=' * 62}{RESET}")
@@ -115,7 +126,7 @@ async def main():
                     "user_id": "bob",
                     "amount": 1500.00,
                     "to": "Attacker LLC",
-                    "memo": "Confused deputy — alice acting as bob",
+                    "memo": "User impersonation — alice acting as bob",
                 })
         if result.get("ok"):
             fail(f"booked $1,500 from bob's account (payment_id={result['payment']['id']}) — no user binding in API key auth")
@@ -153,7 +164,7 @@ async def main():
                     "user_id": "bob",
                     "amount": 1500.00,
                     "to": "Attacker LLC",
-                    "memo": "Confused deputy — alice acting as bob",
+                    "memo": "User impersonation — alice acting as bob",
                 })
         if result.get("ok"):
             fail(f"booked $1,500 from bob's account — sub binding not enforced!")
@@ -173,7 +184,7 @@ async def main():
     print(f"{BOLD}  VERDICT{RESET}")
     print(f"{'=' * 62}")
     print(f"""
-  Confused deputy attack: alice's token used to act as bob.
+  User impersonation attack: alice's token used to act as bob.
 
   Server #1: ACCEPTED  — API key has no user identity at all
   Server #2: ACCEPTED* — sub binding is opt-in, not structural

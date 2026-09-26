@@ -10,7 +10,7 @@ Each script prints legible pass/fail output designed to be quoted directly in th
 | `01_leaked_key_replay.py` | Server #1 | Replay a leaked static API key | **Ready** |
 | `02_token_replay.py` | Server #2 | Replay an intercepted access token | Stub — implement after server-2 |
 | `03_cross_server_token.py` | Server #3 | Use server-2 token against server-3 (audience mismatch) | Stub — implement after server-3 |
-| `04_confused_deputy.py` | Server #3 | Alice's token used to act as bob (sub vs user_id mismatch) | Stub — implement after server-3 |
+| `04_user_impersonation.py` | Server #3 | Alice's token used to act as bob (sub vs user_id mismatch) | **Ready** |
 
 ## Quickstart (Attack #1)
 

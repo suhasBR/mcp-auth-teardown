@@ -100,7 +100,7 @@ Then follow the individual server READMEs.
 │   ├── 01_leaked_key_replay.py    # ← Working now
 │   ├── 02_token_replay.py         # Stub — after server-2
 │   ├── 03_cross_server_token.py   # Stub — after server-3 (audience mismatch)
-│   ├── 04_confused_deputy.py      # Stub — after server-3 (sub vs user_id)
+│   ├── 04_user_impersonation.py   # sub vs user_id binding bypass
 │   ├── requirements.txt
 │   └── README.md
 ├── setup/                         # Auth0 provisioning

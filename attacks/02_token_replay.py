@@ -157,7 +157,7 @@ async def main():
                     ok(f"server rejected the booking: {result.get('error')}")
                 print()
 
-                print(f"{BOLD}[3/3] Confused deputy — alice's token used to act as bob...{RESET}")
+                print(f"{BOLD}[3/3] User impersonation — alice's token used to act as bob...{RESET}")
                 print(f"      {DIM}Token was issued to alice's OAuth session. Acting as bob.{RESET}")
                 result = await call(session, "book_payment", {
                     "user_id": "bob",
@@ -193,7 +193,7 @@ async def main():
     - Server #1: leaked key = unlimited access FOREVER
     - Server #2: replayed token = access until expiry (finite window)
 
-  But the deeper problem is the confused deputy (step 3):
+  But the deeper problem is user impersonation (step 3):
     - The token proves a valid OAuth session exists
     - It does NOT prove the caller is authorized to act as a specific user
     - user_id is just a parameter — the server accepts whatever you send
@@ -201,7 +201,7 @@ async def main():
 
   Server #3 fixes this: sub claim in the JWT is bound to user_id on every
   tool call. Cross-user actions are rejected at the auth layer, not the app layer.
-  See attacks/03_cross_server_token.py and 04_confused_deputy.py.
+  See attacks/03_cross_server_token.py and 04_user_impersonation.py.
 """)
 
 

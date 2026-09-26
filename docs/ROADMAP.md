@@ -32,7 +32,7 @@ call, `sub`↔`user_id` binding checks, or the attack scripts' core logic.
 | `server-3-resourceserver/` | 🟡 | all files scaffolded; needs Auth0 tenant setup + sub values in data.py |
 | `attacks/02_token_replay.py` | 🟡 | harness scaffolded; token-capture + replay assertions are yours |
 | `attacks/03_cross_server_token.py` | 🟡 | complete — needs SERVER_2_TOKEN pasted in |
-| `attacks/04_confused_deputy.py` | 🟡 | complete — needs ALICE_TOKEN pasted in |
+| `attacks/04_user_impersonation.py` | 🟡 | complete — needs ALICE_TOKEN pasted in |
 | `setup/provision_auth0.py` | ⬜ | not started |
 | README video + blog post | ⬜ | placeholders in README |
 
@@ -150,7 +150,7 @@ action is attributed to a human `sub`.
 
 - [ ] `attacks/03_cross_server_token.py` — get a server-2-audience token, present
       it to server-3, assert rejection citing `aud` mismatch.
-- [ ] `attacks/04_confused_deputy.py` — complete PKCE as alice, call
+- [ ] `attacks/04_user_impersonation.py` — complete PKCE as alice, call
       `book_payment(user_id="bob")` with alice's token, assert rejection citing
       `sub` != `user_id`. Show servers #1/#2 would have accepted it.
 

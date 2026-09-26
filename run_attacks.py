@@ -86,14 +86,14 @@ def main():
     divider("Attack #1 — Leaked API Key Replay  |  Target: Server #1")
     run("attacks/01_leaked_key_replay.py")
 
-    divider("Attack #2 — Token Replay + Confused Deputy  |  Target: Server #2")
+    divider("Attack #2 — Token Replay + User Impersonation  |  Target: Server #2")
     run("attacks/02_token_replay.py")
 
     divider("Attack #3 — Cross-Server Token (Aud Mismatch)  |  Target: Server #3")
     run("attacks/03_cross_server_token.py")
 
-    divider("Attack #4 — Confused Deputy  |  All Servers")
-    run("attacks/04_confused_deputy.py")
+    divider("Attack #4 — User Impersonation  |  All Servers")
+    run("attacks/04_user_impersonation.py")
 
     summary()
 
